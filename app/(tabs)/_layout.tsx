@@ -110,7 +110,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   headerTitle: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '700',
     marginLeft: 16,
   },
