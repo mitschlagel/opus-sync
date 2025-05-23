@@ -1,38 +1,72 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { EventCard } from '../types';
+import { format } from 'date-fns';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { EventNotesModal } from '../components/EventNotesModal';
+import { CalendarEvent } from '../types';
 
-interface CardListScreenProps {
-  eventCards: EventCard[];
+interface GroupedEvent {
+  id: string;
+  groupName: string;
+  events: {
+    label: string;
+    event: CalendarEvent;
+  }[];
 }
 
-export const CardListScreen: React.FC<CardListScreenProps> = ({ eventCards }) => {
+interface CardListScreenProps {
+  eventCards: GroupedEvent[];
+}
+
+export function CardListScreen({ eventCards }: CardListScreenProps) {
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleEventPress = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setSelectedEvent(null);
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      {eventCards.map((card) => (
+    <View style={styles.container}>
+      {eventCards.map(card => (
         <View key={card.id} style={styles.card}>
           <Text style={styles.cardTitle}>{card.groupName}</Text>
-          {card.events.map((event) => (
-            <View key={event.id} style={styles.eventItem}>
-              <Text style={styles.eventTitle}>{event.title}</Text>
-              <Text style={styles.eventDate}>
-                {event.startDate.toLocaleDateString()} - {event.endDate.toLocaleDateString()}
-              </Text>
-              {event.location && (
-                <Text style={styles.eventLocation}>{event.location}</Text>
+          {card.events.map((item, index) => (
+            <TouchableOpacity
+              key={`${card.id}-${index}`}
+              style={styles.eventItem}
+              onPress={() => handleEventPress(item.event)}
+            >
+              <View style={styles.eventHeader}>
+                <Text style={styles.eventLabel}>{item.label}</Text>
+                <Text style={styles.eventDate}>
+                  {format(item.event.startDate, 'MMM d, yyyy')}
+                </Text>
+              </View>
+              {item.event.location && (
+                <Text style={styles.eventLocation}>{item.event.location}</Text>
               )}
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       ))}
-    </ScrollView>
+
+      <EventNotesModal
+        isVisible={isModalVisible}
+        event={selectedEvent}
+        onClose={handleCloseModal}
+      />
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
     padding: 16,
   },
   card: {
@@ -50,9 +84,9 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 12,
     color: '#1a1a1a',
   },
   eventItem: {
@@ -61,20 +95,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
-  eventTitle: {
+  eventHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  eventLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#2089dc',
   },
   eventDate: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4,
   },
   eventLocation: {
     fontSize: 14,
     color: '#666',
     marginTop: 4,
-    fontStyle: 'italic',
   },
 }); 

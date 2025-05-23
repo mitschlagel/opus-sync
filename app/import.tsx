@@ -5,10 +5,10 @@ import { CalendarUrlInput } from '../src/components/CalendarUrlInput';
 import { useEvents } from '../src/context/EventsContext';
 
 export default function ImportScreen() {
-  const { setEvents } = useEvents();
+  const { addCalendar } = useEvents();
 
-  const handleImport = (events: any[]) => {
-    setEvents(events);
+  const handleImport = async (events: any[], url: string, name: string) => {
+    await addCalendar(url, events, name);
     router.back();
   };
 

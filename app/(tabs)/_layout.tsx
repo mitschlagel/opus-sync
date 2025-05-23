@@ -12,7 +12,10 @@ function HeaderLeft() {
 function HeaderRight({ onPressImport }: { onPressImport: () => void }) {
   return (
     <View style={styles.headerButtons}>
-      <TouchableOpacity style={styles.headerButton} onPress={() => {}}>
+      <TouchableOpacity 
+        style={styles.headerButton} 
+        onPress={() => router.push('/manage-calendars')}
+      >
         <Ionicons name="calendar-sharp" size={24} color="#2089dc" />
       </TouchableOpacity>
       <TouchableOpacity 
