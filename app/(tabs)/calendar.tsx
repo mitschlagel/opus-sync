@@ -1,17 +1,17 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { CalendarUrlInput } from '../../src/components/CalendarUrlInput';
 import { useEvents } from '../../src/context/EventsContext';
-import { CardListScreen } from '../../src/screens/CardListScreen';
-import { groupEvents } from '../../src/utils/eventGrouping';
+import { CalendarScreen } from '../../src/screens/CalendarScreen';
 
-export default function Index() {
-  const { events } = useEvents();
-  const eventCards = groupEvents(events);
+export default function Calendar() {
+  const { events, setEvents } = useEvents();
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
-        <CardListScreen eventCards={eventCards} />
+        <CalendarUrlInput onImport={setEvents} />
+        <CalendarScreen events={events} />
       </ScrollView>
     </View>
   );
