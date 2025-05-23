@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { EventNotesModal } from '../components/EventNotesModal';
 import { CalendarEvent } from '../types';
 
@@ -32,9 +32,15 @@ export function CardListScreen({ eventCards }: CardListScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       {eventCards.map(card => (
-        <View key={card.id} style={styles.card}>
+        <View 
+          key={card.id} 
+          style={styles.card}
+        >
           <Text style={styles.cardTitle}>{card.groupName}</Text>
           {card.events.map((item, index) => (
             <TouchableOpacity
@@ -61,7 +67,7 @@ export function CardListScreen({ eventCards }: CardListScreenProps) {
         event={selectedEvent}
         onClose={handleCloseModal}
       />
-    </View>
+    </ScrollView>
   );
 }
 
