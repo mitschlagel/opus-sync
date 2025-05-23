@@ -1,7 +1,9 @@
 import { format } from 'date-fns';
+import { BlurView } from 'expo-blur';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { EventNotesModal } from '../components/EventNotesModal';
+import { useTheme } from '../theme';
 import { CalendarEvent } from '../types';
 
 interface GroupedEvent {
@@ -20,6 +22,8 @@ interface CardListScreenProps {
 export function CardListScreen({ eventCards }: CardListScreenProps) {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const colorScheme = useColorScheme();
+  const theme = useTheme();
 
   const handleEventPress = (event: CalendarEvent) => {
     setSelectedEvent(event);
@@ -33,32 +37,48 @@ export function CardListScreen({ eventCards }: CardListScreenProps) {
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.contentContainer}
     >
       {eventCards.map(card => (
-        <View 
-          key={card.id} 
-          style={styles.card}
-        >
-          <Text style={styles.cardTitle}>{card.groupName}</Text>
-          {card.events.map((item, index) => (
-            <TouchableOpacity
-              key={`${card.id}-${index}`}
-              style={styles.eventItem}
-              onPress={() => handleEventPress(item.event)}
-            >
-              <View style={styles.eventHeader}>
-                <Text style={styles.eventLabel}>{item.label}</Text>
-                <Text style={styles.eventDate}>
-                  {format(item.event.startDate, 'MMM d, yyyy')}
-                </Text>
-              </View>
-              {item.event.location && (
-                <Text style={styles.eventLocation}>{item.event.location}</Text>
-              )}
-            </TouchableOpacity>
-          ))}
+        <View key={card.id} style={styles.cardWrapper}>
+          <BlurView
+            intensity={80}
+            tint={colorScheme === 'dark' ? 'dark' : 'light'}
+            style={styles.blurView}
+          >
+            <View style={[styles.card, { backgroundColor: theme.cardBackgroundTranslucent }]}>
+              <Text style={[styles.cardTitle, { color: theme.text }]}>{card.groupName}</Text>
+              {card.events.map((item, index) => (
+                <TouchableOpacity
+                  key={`${card.id}-${index}`}
+                  style={[
+                    styles.eventItem,
+                    index !== card.events.length - 1 && {
+                      borderBottomWidth: StyleSheet.hairlineWidth,
+                      borderBottomColor: theme.separator,
+                    },
+                  ]}
+                  onPress={() => handleEventPress(item.event)}
+                >
+                  <View style={styles.eventHeader}>
+                    <Text style={[styles.eventLabel, { color: theme.primary }]}>
+                      {item.label}
+                    </Text>
+                    <Text style={[styles.eventDate, { color: theme.textSecondary }]}>
+                      {format(item.event.startDate, 'MMM d, yyyy')}
+                    </Text>
+                  </View>
+                  {item.event.location && (
+                    <Text style={[styles.eventLocation, { color: theme.textTertiary }]}>
+                      {item.event.location}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </BlurView>
         </View>
       ))}
 
@@ -73,33 +93,32 @@ export function CardListScreen({ eventCards }: CardListScreenProps) {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  contentContainer: {
     padding: 16,
+  },
+  cardWrapper: {
+    marginBottom: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  blurView: {
+    overflow: 'hidden',
+    borderRadius: 20,
   },
   card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 20,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#1a1a1a',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   eventItem: {
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 12,
   },
   eventHeader: {
     flexDirection: 'row',
@@ -108,17 +127,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   eventLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2089dc',
+    fontSize: 17,
+    fontWeight: '500',
+    letterSpacing: -0.4,
   },
   eventDate: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 15,
+    fontWeight: '400',
   },
   eventLocation: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 15,
     marginTop: 4,
   },
 }); 
