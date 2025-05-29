@@ -10,12 +10,14 @@ import {
 } from 'react-native';
 import { useEvents } from '../src/context/EventsContext';
 import { useTheme } from '../src/theme';
+import { importGoogleCalendar } from '../src/utils/calendarImport';
 
 export default function ImportScreen() {
   const theme = useTheme();
-  const { addCalendar } = useEvents();
+  const { addCalendar, addEventsToCalendar } = useEvents();
   const [calendarUrl, setCalendarUrl] = useState('');
   const [calendarName, setCalendarName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleImport = async () => {
     if (!calendarUrl.trim()) {
@@ -27,9 +29,17 @@ export default function ImportScreen() {
       return;
     }
 
+    setIsLoading(true);
     try {
-      // Here you would fetch and parse the calendar data
-      await addCalendar(calendarName.trim());
+      // First parse the calendar data
+      const events = await importGoogleCalendar(calendarUrl.trim());
+      
+      // Create a new calendar
+      const calendarId = await addCalendar(calendarName.trim());
+      
+      // Add the events to the calendar
+      await addEventsToCalendar(calendarId, events);
+
       Alert.alert(
         'Success',
         'Calendar imported successfully',
@@ -41,7 +51,10 @@ export default function ImportScreen() {
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to import calendar');
+      console.error('Import error:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to import calendar');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,6 +75,7 @@ export default function ImportScreen() {
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="url"
+          editable={!isLoading}
         />
 
         <Text style={[styles.label, { color: theme.textSecondary }]}>Calendar Name</Text>
@@ -75,13 +89,21 @@ export default function ImportScreen() {
           placeholderTextColor={theme.textTertiary}
           value={calendarName}
           onChangeText={setCalendarName}
+          editable={!isLoading}
         />
 
         <TouchableOpacity
-          style={[styles.importButton, { backgroundColor: theme.primary }]}
+          style={[
+            styles.importButton, 
+            { backgroundColor: theme.primary },
+            isLoading && { opacity: 0.7 }
+          ]}
           onPress={handleImport}
+          disabled={isLoading}
         >
-          <Text style={styles.importButtonText}>Import Calendar</Text>
+          <Text style={styles.importButtonText}>
+            {isLoading ? 'Importing...' : 'Import Calendar'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -96,30 +118,30 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 12,
-    elevation: 2,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   label: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
     marginBottom: 8,
   },
   input: {
-    fontSize: 16,
-    padding: 12,
-    borderRadius: 8,
+    height: 40,
     borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
     marginBottom: 16,
   },
   importButton: {
-    padding: 16,
-    borderRadius: 12,
+    height: 44,
+    borderRadius: 8,
+    justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
   },
