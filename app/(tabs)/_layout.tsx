@@ -21,12 +21,7 @@ function HeaderRight() {
   };
 
   const handlePressImport = () => {
-    if (calendars.length === 0) {
-      // If no calendars exist, create a default one
-      router.push('/manage-calendars');
-    } else {
-      router.push('/import');
-    }
+    router.push('/import');
   };
 
   return (
